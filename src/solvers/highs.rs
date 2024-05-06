@@ -50,6 +50,7 @@ pub fn highs(to_solve: UnsolvedProblem) -> HighsProblem {
         columns,
         verbose: false,
         options: HighsOptions::default(),
+        solution: None,
     }
 }
 
@@ -149,6 +150,7 @@ pub struct HighsProblem {
     columns: Vec<highs::Col>,
     verbose: bool,
     options: HighsOptions,
+    solution: Option<Vec<(highs::Col, f64)>>,
 }
 
 impl HighsProblem {
@@ -204,6 +206,15 @@ impl HighsProblem {
         }
     }
 
+    /// Sets HiGHS Solution
+    pub fn set_solution(mut self, soln: impl Iterator<Item = (Variable, f64)>) -> HighsProblem {
+        self.solution = Some(
+            soln.map(|(var, val)| (self.columns[var.index()], val))
+                .collect(),
+        );
+        self
+    }
+
     /// Sets HiGHS Time Limit Option
     pub fn set_time_limit(mut self, time_limit: f64) -> HighsProblem {
         self.options.time_limit = time_limit;
@@ -221,9 +232,10 @@ impl SolverModel for HighsProblem {
     type Solution = HighsSolution;
     type Error = ResolutionError;
 
-    fn solve(self) -> Result<Self::Solution, Self::Error> {
+    fn solve(mut self) -> Result<Self::Solution, Self::Error> {
         let verbose = self.verbose;
         let options = self.options;
+        let solution = self.solution.take();
         let mut model = self.into_inner();
         if verbose {
             model.set_option(&b"output_flag"[..], true);
@@ -244,6 +256,12 @@ impl SolverModel for HighsProblem {
 
         model.set_option("time_limit", options.time_limit);
         model.set_option("threads", options.threads as i32);
+
+        if let Some(solution) = solution {
+            model
+                .set_solution(solution.into_iter())
+                .map_err(|_| ResolutionError::Other("SetSolution"))?;
+        }
 
         let solved = model.solve();
         match solved.status() {

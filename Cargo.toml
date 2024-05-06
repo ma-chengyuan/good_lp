@@ -8,24 +8,38 @@ documentation = "https://docs.rs/good_lp"
 description = " Mixed Integer Linear Programming for Rust, with an user-friendly API. This crate allows modeling LP problems, and lets you solve them with various solvers."
 license = "MIT"
 keywords = ["linear-programming", "optimization", "symbolic", "math", "solver"]
-categories = ["mathematics", "algorithms", "science", "api-bindings", "data-structures"]
+categories = [
+    "mathematics",
+    "algorithms",
+    "science",
+    "api-bindings",
+    "data-structures",
+]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [features]
 default = ["coin_cbc", "singlethread-cbc"]
 singlethread-cbc = ["coin_cbc?/singlethread-cbc"]
 scip = ["russcip"]
-all_default_solvers = ["coin_cbc", "minilp", "lpsolve", "highs", "russcip", "lp-solvers", "clarabel"] # cplex-rs is not included because it is incompatible with lpsolve
+all_default_solvers = [
+    "coin_cbc",
+    "minilp",
+    "lpsolve",
+    "highs",
+    "russcip",
+    "lp-solvers",
+    "clarabel",
+] # cplex-rs is not included because it is incompatible with lpsolve
 
 [dependencies]
 coin_cbc = { version = "0.1", optional = true, default-features = false }
 minilp = { version = "0.2", optional = true }
 lpsolve = { version = "0.1", optional = true }
-highs = { version = "1.5.0", optional = true }
+highs = { git = "https://github.com/ma-chengyuan/highs.git ", rev = "e966896455b8892263cf4f2e504330eb94293271", optional = true }
 russcip = { version = "0.3.4", optional = true }
 lp-solvers = { version = "1.0.0", features = ["cplex"], optional = true }
 cplex-rs = { version = "0.1", optional = true }
-clarabel = { version = "0.7.1", optional = true, features=[] }
+clarabel = { version = "0.7.1", optional = true, features = [] }
 fnv = "1.0.5"
 
 [dev-dependencies]
@@ -39,7 +53,7 @@ harness = false
 [package.metadata.docs.rs]
 # Display the documentation for all solvers on docs.rs
 all-features = false
-features = [ "all_default_solvers" ]
+features = ["all_default_solvers"]
 default-target = "x86_64-unknown-linux-gnu"
 targets = ["x86_64-unknown-linux-gnu"]
 rustdoc-args = ["--cfg", "docsrs"]
